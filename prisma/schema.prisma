@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Inquiry {
+  id             Int       @id @default(autoincrement())
+  firstName      String
+  lastName       String
+  email          String
+  primaryPhone   String
+  secondaryPhone String?
+  message        String?
+  eventDate      DateTime?
+  eventTime      DateTime?
+  guestCount     Int?
+  service        String?
+  employeeName   String?
+  eventTypeId    Int?
+  eventType      EventType? @relation(fields: [eventTypeId], references: [id])
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  event          Event?    // Relation to an Event if the inquiry becomes an event.
+}
+
+model EventType {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  inquiries   Inquiry[]  
+}
+
+model Brand {
+  id             Int      @id @default(autoincrement())
+  name           String
+  description    String?
+  website        String?
+  logo           String?
+  primaryColor   String?  // Hex code for branding
+  secondaryColor String?  // Hex code for branding
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  locations      Location[]
+  packages       Package[]
+  events         Event[]
+}
+
+model Location {
+  id        Int      @id @default(autoincrement())
+  brandId   Int
+  brand     Brand    @relation(fields: [brandId], references: [id])
+  name      String
+  address   String
+  city      String
+  state     String
+  zipCode   String
+  phone     String?
+  email     String?
+  website   String?
+  taxRate   Float?  // Default tax rate for the location
+  gratuityRate Float? // Default gratuity rate for the location
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  events    Event[]
+}
+
+model Package {
+  id          Int      @id @default(autoincrement())
+  brandId     Int
+  brand       Brand    @relation(fields: [brandId], references: [id])
+  name        String
+  description String?
+  pricePerPerson Float
+  serviceType String?  // BRUNCH, LUNCH, DINNER
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  packageItems PackageItems[]
+  eventPackages EventPackages[]
+}
+
+model Items {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  category    String?  // Appetizer, Main Course, Dessert, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  packageItems PackageItems[]
+}
+
+model PackageItems {
+  packageId Int
+  itemId    Int
+  package   Package @relation(fields: [packageId], references: [id])
+  item      Items   @relation(fields: [itemId], references: [id])
+  @@id([packageId, itemId])
+}
+
+model Event {
+  id             Int      @id @default(autoincrement())
+  inquiryId      Int?     @unique
+  inquiry        Inquiry? @relation(fields: [inquiryId], references: [id])
+  brandId        Int
+  brand          Brand    @relation(fields: [brandId], references: [id])
+  locationId     Int
+  location       Location @relation(fields: [locationId], references: [id])
+  status         String   // Pipeline status
+  eventDate      DateTime
+  eventTime      DateTime
+  guestCount     Int
+  specialRequest String?
+  taxRate        Float?
+  gratuityRate   Float?
+  subtotal       Float?
+  taxAmount      Float?
+  gratuityAmount Float?
+  totalAmount    Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  eventPackages  EventPackages[]
+  payments       EventPayments[]
+}
+
+model EventPackages {
+  eventId    Int
+  packageId  Int
+  event      Event   @relation(fields: [eventId], references: [id])
+  package    Package @relation(fields: [packageId], references: [id])
+  priceAtBooking Float
+  guestCount Int
+  @@id([eventId, packageId])
+}
+
+model EventPayments {
+  id             Int      @id @default(autoincrement())
+  eventId        Int
+  event          Event    @relation(fields: [eventId], references: [id])
+  paymentDate    DateTime
+  amount         Float
+  paymentType    String
+  referenceNumber String?
+  createdBy      String   // ID of the logged-in user
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  userId     String
+  action     String
+  recordType String   // e.g., "Event", "Package", "Payment"
+  recordId   Int
+  timestamp  DateTime @default(now())
+  details    Json?
+  ipAddress  String?
+  deviceInfo String?
+}
