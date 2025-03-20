@@ -44,7 +44,3 @@ next-env.d.ts
 # .amplify
 # amplify_outputs*
 # amplifyconfiguration*
-
-.amplify
-amplify_outputs*
-amplifyconfiguration*
