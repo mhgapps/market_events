@@ -1,6 +1,9 @@
-/* src/styles/globals.css */
+@import "tailwindcss/preflight";
+@import "tailwindcss/utilities";
+
+/* (Optional) Your global styles below */
 body {
-    margin: 0;
-    padding: 0;
-    font-family: sans-serif;
-  }
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+}

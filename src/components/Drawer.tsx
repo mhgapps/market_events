@@ -1,6 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
-import { FaHome, FaEnvelope, FaChartBar } from 'react-icons/fa';
+import HomeIcon from '@mui/icons-material/Home';
+import EmailIcon from '@mui/icons-material/Email';
+import BarChartIcon from '@mui/icons-material/BarChart';
 
 type DrawerProps = {
   isOpen: boolean;
@@ -39,19 +41,21 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, toggleDrawer }) => {
         &times;
       </button>
       <nav>
-        <ul style={{ listStyleType: 'none', padding: 0 }}>
+        <ul style={{ listStyleType: 'none', padding: 0, margin: 0 }}>
           <li>
             <Link href="/" legacyBehavior>
               <a
                 style={{
-                  display: 'block',
+                  display: 'inline-flex',
+                  alignItems: 'center',
                   padding: '10px 20px',
                   color: '#007bff',
                   textDecoration: 'none',
                   fontSize: '18px',
                 }}
               >
-                <FaHome style={{ marginRight: '8px' }} /> Home
+                <HomeIcon style={{ marginRight: '8px' }} />
+                Home
               </a>
             </Link>
           </li>
@@ -59,14 +63,16 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, toggleDrawer }) => {
             <Link href="/inquiry" legacyBehavior>
               <a
                 style={{
-                  display: 'block',
+                  display: 'inline-flex',
+                  alignItems: 'center',
                   padding: '10px 20px',
                   color: '#007bff',
                   textDecoration: 'none',
                   fontSize: '18px',
                 }}
               >
-                <FaEnvelope style={{ marginRight: '8px' }} /> Inquiry
+                <EmailIcon style={{ marginRight: '8px' }} />
+                Inquiry
               </a>
             </Link>
           </li>
@@ -74,14 +80,16 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, toggleDrawer }) => {
             <Link href="/admin/inquiries" legacyBehavior>
               <a
                 style={{
-                  display: 'block',
+                  display: 'inline-flex',
+                  alignItems: 'center',
                   padding: '10px 20px',
                   color: '#007bff',
                   textDecoration: 'none',
                   fontSize: '18px',
                 }}
               >
-                <FaChartBar style={{ marginRight: '8px' }} /> Admin
+                <BarChartIcon style={{ marginRight: '8px' }} />
+                Admin
               </a>
             </Link>
           </li>
