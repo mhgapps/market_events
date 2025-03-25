@@ -39,7 +39,7 @@ export default async function EventDetailPage({ params }: { params: { eventId: s
   // Convert the eventId param from string to number
   const eventId = Number(params.eventId);
 
-  // 1. Fetch the event with location, inquiry, payments, eventPackages + eventPackageItems, etc.
+  // 1. Fetch the event with location, inquiry, payments, eventPackages (and items), eventAllergens, etc.
   const event = await prisma.event.findUnique({
     where: { id: eventId },
     include: {
@@ -69,6 +69,9 @@ export default async function EventDetailPage({ params }: { params: { eventId: s
             },
           },
         },
+      },
+      eventAllergens: {
+        include: { allergen: true },
       },
     },
   });
@@ -101,10 +104,16 @@ export default async function EventDetailPage({ params }: { params: { eventId: s
     orderBy: { name: "asc" },
   });
 
-  // 4. Convert all Decimal fields to plain numbers
+  // 4. Fetch all allergens from the Allergens table
+  const allAllergens = await prisma.allergens.findMany({
+    orderBy: { name: "asc" },
+  });
+
+  // 5. Convert all Decimal fields to plain numbers
   const plainEvent = decimalToNumber(event);
   const plainPackages = decimalToNumber(allPackages);
   const plainEventTypes = decimalToNumber(allEventTypes);
+  const plainAllergens = decimalToNumber(allAllergens);
 
   // Pass the converted data to the client component
   return (
@@ -112,6 +121,7 @@ export default async function EventDetailPage({ params }: { params: { eventId: s
       event={plainEvent}
       allPackages={plainPackages}
       allEventTypes={plainEventTypes}
+      allAllergens={plainAllergens}
     />
   );
 }

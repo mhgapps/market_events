@@ -12,7 +12,7 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
-  Tooltip,
+  Divider,
 } from "@mui/material";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 
@@ -59,7 +59,7 @@ const AllergensSection: React.FC<AllergensSectionProps> = ({
       });
       if (!res.ok) throw new Error("Failed to update allergens");
       const updatedAllergens = await res.json();
-      // Expecting updatedAllergens to be an array of EventAllergens records with an "allergen" property.
+      // Expecting updatedAllergens to be an array of EventAllergen records with an "allergen" property.
       const updatedAllergenList = updatedAllergens.map((ea: any) => ea.allergen);
       console.log("Updated allergens:", updatedAllergenList);
       if (onAllergensUpdated) onAllergensUpdated(updatedAllergenList);
@@ -71,12 +71,19 @@ const AllergensSection: React.FC<AllergensSectionProps> = ({
   };
 
   return (
-    <Box sx={{ mb: 2 }}>
-      <Tooltip title="Add Allergens">
-        <IconButton onClick={() => setOpenModal(true)}>
-          <WarningAmberOutlinedIcon />
+    <Box sx={{ mb: 2, mt: 3 }}>
+      <Divider sx={{ mt: 2, mb: 2 }} color="red"/>
+      <Box
+        sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+        onClick={() => setOpenModal(true)}
+      >
+        <IconButton>
+          <WarningAmberOutlinedIcon color="error"/>
         </IconButton>
-      </Tooltip>
+        <Typography variant="body1" sx={{ ml: 1 }}>
+          Add/Edit Allergens
+        </Typography>
+      </Box>
       {selectedAllergenIds.length > 0 && (
         <Box sx={{ mt: 1 }}>
           <Typography variant="h6" color="red">
@@ -88,6 +95,7 @@ const AllergensSection: React.FC<AllergensSectionProps> = ({
               .map((a) => a.name)
               .join(", ")}
           </Typography>
+          
         </Box>
       )}
       <Dialog open={openModal} onClose={() => setOpenModal(false)} fullWidth>
@@ -117,6 +125,7 @@ const AllergensSection: React.FC<AllergensSectionProps> = ({
           </Button>
         </DialogActions>
       </Dialog>
+      <Divider sx={{ mt: 2 }} color="red"/>
     </Box>
   );
 };

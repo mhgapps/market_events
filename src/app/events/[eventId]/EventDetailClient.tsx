@@ -44,8 +44,9 @@ function localIsoString() {
 }
 
 export default function EventDetailClient({ event, allPackages, allEventTypes, allAllergens }: any) {
-  // Diagnostic: log the event id to ensure it's valid (non-zero)
+  // Diagnostic: log the event id and allergens to ensure they're valid
   console.log("Event ID:", event.id);
+  console.log("All Allergen list:", allAllergens);
 
   // Basic date/time parse
   const dateObj = event.eventDate ? new Date(event.eventDate) : null;
@@ -621,14 +622,16 @@ export default function EventDetailClient({ event, allPackages, allEventTypes, a
                   throw new Error("Function not implemented.");
                 }}
               />
+
               <AllergensSection
                 eventId={event.id}
                 eventAllergens={event.eventAllergens || []}
-                allAllergens={allAllergens || []} // Make sure to pass the full list of allergens
+                allAllergens={allAllergens || []}
                 onAllergensUpdated={(updated) => {
                   console.log("Updated allergens:", updated);
                 }}
               />
+
               <Typography variant="h6" gutterBottom mt={5}>
                 Packages
               </Typography>
@@ -1016,3 +1019,5 @@ export default function EventDetailClient({ event, allPackages, allEventTypes, a
     </Box>
   );
 }
+
+// (removed duplicate default export)

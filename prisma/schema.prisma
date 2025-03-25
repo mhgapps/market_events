@@ -152,6 +152,7 @@ model Event {
   eventPackages  EventPackages[]
   payments       EventPayments[]
   eventAllergens EventAllergens[]
+  contracts Contract[]
 }
 
 // -------------------- EventPackages --------------------
@@ -257,4 +258,15 @@ model EventAllergens {
   allergen Allergens @relation(fields: [allergenId], references: [id])
   
   @@id([eventId, allergenId])
+}
+
+model Contract {
+  id                Int      @id @default(autoincrement())
+  eventId           Int
+  event             Event    @relation(fields: [eventId], references: [id])
+  content           String   // The full HTML content of the contract including terms & conditions.
+  generatedAt       DateTime @default(now())
+  customerSignature String?  // The customer's signature (or typed name) if accepted.
+  signedAt          DateTime? // When the contract was signed.
+  status            String   @default("Pending") // e.g., "Pending", "Sent", "Accepted", "Rejected".
 }

@@ -17,7 +17,7 @@ export async function POST(request: Request, { params }: RouteProps) {
     }
 
     // Delete existing eventAllergens for this event
-    await prisma.eventAllergen.deleteMany({
+    await prisma.eventAllergens.deleteMany({
       where: { eventId },
     });
 
