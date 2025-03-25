@@ -1,4 +1,3 @@
-// src/app/contracts/[contractId]/page.tsx
 import { PrismaClient } from "@prisma/client";
 import ContractReview from "./ContractReview";
 
@@ -19,8 +18,6 @@ export default async function ContractPage({ params }: { params: { contractId: s
       </div>
     );
   }
-  
-  // Optionally, convert any Decimal fields or dates if necessary here.
   
   return <ContractReview contract={contract} />;
 }

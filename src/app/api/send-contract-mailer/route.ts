@@ -5,20 +5,20 @@ import nodemailer from "nodemailer";
 export async function POST(request: Request) {
   try {
     const { to, contractLink } = await request.json();
-    
-    // Configure the transporter with your SMTP server details
+
+    // Configure the transporter with SMTP details from environment variables
     const transporter = nodemailer.createTransport({
-      host: "mail.smtp2go.com",
-      port: 2525,
-      secure: false, // Use false if your SMTP server doesn't require SSL/TLS on connection
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: false, // Set to false if SSL/TLS is not required on connection
       auth: {
-        user: "noreply@markethospitalitygroup.com",
-        pass: "rDBD3IzClGz9oW6N",
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
-    
+
     const mailOptions = {
-      from: "noreply@markethospitalitygroup.com",
+      from: process.env.EMAIL_USER,
       to,
       subject: "Your Event Contract",
       html: `<p>Thank you for choosing us for your event!</p>
@@ -26,9 +26,9 @@ export async function POST(request: Request) {
              <p><a href="${contractLink}">View Contract</a></p>
              <p>If you agree, please sign the contract online.</p>`,
     };
-    
+
     await transporter.sendMail(mailOptions);
-    
+
     return NextResponse.json({ message: "Email sent successfully" });
   } catch (error) {
     console.error("Error sending email:", error);

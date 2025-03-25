@@ -6,10 +6,10 @@ import { Box, Typography, TextField, Button } from "@mui/material";
 interface Contract {
   id: number;
   content: string;
-  generatedAt: string;
+  generatedAt: string | Date;
   status: string;
   customerSignature?: string;
-  signedAt?: string;
+  signedAt?: string | Date;
 }
 
 interface ContractReviewProps {
@@ -29,7 +29,7 @@ const ContractReview: React.FC<ContractReviewProps> = ({ contract }) => {
       if (!res.ok) {
         throw new Error("Failed to sign contract");
       }
-      alert("Contract accepted successfully!");
+      alert("Contract signed successfully!");
       // Optionally, redirect or update UI here.
     } catch (error) {
       console.error("Error signing contract:", error);
