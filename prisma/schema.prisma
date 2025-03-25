@@ -7,8 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// -------------------- Inquiry --------------------
 model Inquiry {
-  id             Int       @id @default(autoincrement())
+  id             Int        @id @default(autoincrement())
   firstName      String
   lastName       String
   email          String
@@ -22,93 +23,118 @@ model Inquiry {
   employeeName   String?
   eventTypeId    Int?
   eventType      EventType? @relation(fields: [eventTypeId], references: [id])
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  event          Event?    // Relation to an Event if the inquiry becomes an event.
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  // One-to-many: an inquiry can have multiple events
+  events         Event[]
+
+  customerId     Int?
+  customer       Customer?   @relation(fields: [customerId], references: [id])
+  inquiryContacts InquiryContact[]
+  locationId     Int?
+  location       Location?   @relation(fields: [locationId], references: [id])
 }
 
+// -------------------- EventType --------------------
 model EventType {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   name        String
   description String?
-  inquiries   Inquiry[]  
+  inquiries   Inquiry[]
 }
 
+// -------------------- Brand --------------------
 model Brand {
-  id             Int      @id @default(autoincrement())
+  id             Int        @id @default(autoincrement())
   name           String
   description    String?
   website        String?
   logo           String?
-  primaryColor   String?  // Hex code for branding
-  secondaryColor String?  // Hex code for branding
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  primaryColor   String?
+  secondaryColor String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @default(now())
   locations      Location[]
   packages       Package[]
   events         Event[]
+  items          Items[]
 }
 
+// -------------------- Location --------------------
 model Location {
-  id        Int      @id @default(autoincrement())
-  brandId   Int
-  brand     Brand    @relation(fields: [brandId], references: [id])
-  name      String
-  address   String
-  city      String
-  state     String
-  zipCode   String
-  phone     String?
-  email     String?
-  website   String?
-  taxRate   Float?  // Default tax rate for the location
-  gratuityRate Float? // Default gratuity rate for the location
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  events    Event[]
+  id           Int      @id @default(autoincrement())
+  brandId      Int
+  brand        Brand    @relation(fields: [brandId], references: [id])
+  name         String
+  address      String
+  city         String
+  state        String
+  zipCode      String
+  phone        String?
+  email        String?
+  website      String?
+  taxRate      Float?
+  gratuityRate Float?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+  events       Event[]
+  inquiries    Inquiry[]
 }
 
+// -------------------- Package --------------------
 model Package {
-  id          Int      @id @default(autoincrement())
-  brandId     Int
-  brand       Brand    @relation(fields: [brandId], references: [id])
-  name        String
-  description String?
-  pricePerPerson Float
-  serviceType String?  // BRUNCH, LUNCH, DINNER
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  packageItems PackageItems[]
-  eventPackages EventPackages[]
+  id               Int      @id @default(autoincrement())
+  brandId          Int
+  brand            Brand    @relation(fields: [brandId], references: [id])
+  name             String
+  description      String?
+  pricePerPerson   Float
+  serviceType      String?
+  appetizerUpcharge Float?  @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
+  packageItems     PackageItems[]
+  eventPackages    EventPackages[]
 }
 
+// -------------------- Items --------------------
 model Items {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   name        String
   description String?
-  category    String?  // Appetizer, Main Course, Dessert, etc.
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  category    String?
+  brandId     Int
+  brand       Brand      @relation(fields: [brandId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now())
   packageItems PackageItems[]
 }
 
+// -------------------- PackageItems (universal) --------------------
 model PackageItems {
   packageId Int
   itemId    Int
   package   Package @relation(fields: [packageId], references: [id])
   item      Items   @relation(fields: [itemId], references: [id])
+  upCharge  Float?
+
+  // Opposite side of the relation to EventPackageItems
+  eventPackageItems EventPackageItems[]
+
   @@id([packageId, itemId])
 }
 
+// -------------------- Event --------------------
 model Event {
-  id             Int      @id @default(autoincrement())
-  inquiryId      Int?     @unique
-  inquiry        Inquiry? @relation(fields: [inquiryId], references: [id])
+  id             Int             @id @default(autoincrement())
+  inquiryId      Int?
+  inquiry        Inquiry?        @relation(fields: [inquiryId], references: [id])
   brandId        Int
-  brand          Brand    @relation(fields: [brandId], references: [id])
+  brand          Brand           @relation(fields: [brandId], references: [id])
   locationId     Int
-  location       Location @relation(fields: [locationId], references: [id])
-  status         String   // Pipeline status
+  location       Location        @relation(fields: [locationId], references: [id])
+  status         String
   eventDate      DateTime
   eventTime      DateTime
   guestCount     Int
@@ -119,43 +145,116 @@ model Event {
   taxAmount      Float?
   gratuityAmount Float?
   totalAmount    Float?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  customerId     Int?
+  customer       Customer?       @relation(fields: [customerId], references: [id])
   eventPackages  EventPackages[]
   payments       EventPayments[]
+  eventAllergens EventAllergens[]
 }
 
+// -------------------- EventPackages --------------------
 model EventPackages {
-  eventId    Int
-  packageId  Int
-  event      Event   @relation(fields: [eventId], references: [id])
-  package    Package @relation(fields: [packageId], references: [id])
-  priceAtBooking Float
-  guestCount Int
+  eventId          Int
+  packageId        Int
+  event            Event    @relation(fields: [eventId], references: [id])
+  package          Package  @relation(fields: [packageId], references: [id])
+  priceAtBooking   Float
+  guestCount       Int
+  upcharge         Decimal? @default(0.00) @db.Decimal(10, 2)
+  upchargeNote     String?  // <-- new field for upcharge note
+  eventPackageItems EventPackageItems[]
+
   @@id([eventId, packageId])
 }
 
+// -------------------- EventPayments --------------------
 model EventPayments {
-  id             Int      @id @default(autoincrement())
-  eventId        Int
-  event          Event    @relation(fields: [eventId], references: [id])
-  paymentDate    DateTime
-  amount         Float
-  paymentType    String
+  id              Int      @id @default(autoincrement())
+  eventId         Int
+  event           Event    @relation(fields: [eventId], references: [id])
+  paymentDate     DateTime
+  amount          Float
+  paymentType     String
   referenceNumber String?
-  createdBy      String   // ID of the logged-in user
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdBy       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
 }
 
+// -------------------- AuditLog --------------------
 model AuditLog {
   id         Int      @id @default(autoincrement())
   userId     String
   action     String
-  recordType String   // e.g., "Event", "Package", "Payment"
+  recordType String
   recordId   Int
   timestamp  DateTime @default(now())
   details    Json?
   ipAddress  String?
   deviceInfo String?
+}
+
+// -------------------- Customer --------------------
+model Customer {
+  id         Int       @id @default(autoincrement())
+  firstName  String
+  lastName   String
+  email      String    @unique
+  phone      String?
+  address    String?   // <-- new field for address
+  city       String?   // <-- new field for city
+  state      String?   // <-- new field for state
+  zipCode    String?   // <-- new field for zip code
+  inquiries  Inquiry[]
+  events     Event[]
+}
+
+// -------------------- InquiryContact --------------------
+model InquiryContact {
+  id         Int      @id @default(autoincrement())
+  inquiryId  Int
+  inquiry    Inquiry  @relation(fields: [inquiryId], references: [id])
+  contactDate DateTime @default(now())
+  note       String
+  createdBy  String
+  createdAt  DateTime @default(now())
+}
+
+// -------------------- EventPackageItems (new) --------------------
+model EventPackageItems {
+  id             Int             @id @default(autoincrement())
+  eventId        Int
+  packageId      Int
+  eventPackage   EventPackages   @relation(fields: [eventId, packageId], references: [eventId, packageId])
+  itemId         Int
+  packageItem    PackageItems    @relation(fields: [packageId, itemId], references: [packageId, itemId])
+  finalUpcharge  Decimal?        @default(0.00) @db.Decimal(10, 2)
+  quantity       Int?            @default(1)
+  notes          String?
+  upchargeNote   String?         // <-- new field for upcharge note
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+// -------------------- Allergens --------------------
+model Allergens {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  
+  // One allergen can be associated with many events
+  eventAllergens EventAllergens[]
+}
+
+// -------------------- EventAllergens --------------------
+model EventAllergens {
+  eventId    Int
+  allergenId Int
+  
+  event    Event     @relation(fields: [eventId], references: [id])
+  allergen Allergens @relation(fields: [allergenId], references: [id])
+  
+  @@id([eventId, allergenId])
 }

@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -7,68 +8,130 @@ import {
   Grid,
   TextField,
   Typography,
-  MenuItem
-} from '@mui/material';
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+  SelectChangeEvent
+} from "@mui/material";
 
 export default function InquiryPage() {
+  // ------------------- LOCAL STATE -------------------
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    primaryPhone: '',
-    secondaryPhone: '',
-    eventDate: '',
-    eventTime: '',
-    guestCount: '',
-    service: '',
-    eventTypeId: '',
-    message: '',
-    employeeName: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    primaryPhone: "",
+    secondaryPhone: "",
+    eventDate: "",
+    eventTime: "",
+    guestCount: "",
+    service: "",
+    eventTypeId: "",
+    message: "",
+    employeeName: "",
+    locationId: "",
   });
 
-  const handleChange = (
+  // Arrays fetched from your APIs
+  const [assignedLocations, setAssignedLocations] = useState<
+    { id: number; name: string }[]
+  >([]);
+  const [eventTypes, setEventTypes] = useState<{ id: number; name: string }[]>(
+    []
+  );
+
+  // ------------------- FETCH DATA -------------------
+  useEffect(() => {
+    (async () => {
+      try {
+        // 1. Fetch assigned locations
+        const locRes = await fetch("/api/assigned-locations");
+        const locData = await locRes.json();
+
+        // If exactly one location, default it
+        if (locData.length === 1) {
+          setFormData((prev) => ({ ...prev, locationId: String(locData[0].id) }));
+        }
+        setAssignedLocations(locData);
+
+        // 2. Fetch event types
+        const etRes = await fetch("/api/event-types");
+        const etData = await etRes.json();
+        setEventTypes(etData);
+      } catch (error) {
+        console.error("Error fetching assigned locations or event types", error);
+      }
+    })();
+  }, []);
+
+  // ------------------- HANDLERS -------------------
+  // Normal text fields
+  const handleTextChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Service dropdown
+  const handleServiceChange = (e: SelectChangeEvent<string>) => {
+    setFormData({ ...formData, service: e.target.value });
+  };
+
+  // Event Type dropdown
+  const handleEventTypeChange = (e: SelectChangeEvent<string>) => {
+    setFormData({ ...formData, eventTypeId: e.target.value });
+  };
+
+  // Location dropdown
+  const handleLocationChange = (e: SelectChangeEvent<string>) => {
+    setFormData({ ...formData, locationId: e.target.value });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/inquiry', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/inquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       if (res.ok) {
-        alert('Inquiry submitted successfully!');
+        alert("Inquiry submitted successfully!");
         setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          primaryPhone: '',
-          secondaryPhone: '',
-          eventDate: '',
-          eventTime: '',
-          guestCount: '',
-          service: '',
-          eventTypeId: '',
-          message: '',
-          employeeName: '',
+          firstName: "",
+          lastName: "",
+          email: "",
+          primaryPhone: "",
+          secondaryPhone: "",
+          eventDate: "",
+          eventTime: "",
+          guestCount: "",
+          service: "",
+          eventTypeId: "",
+          message: "",
+          employeeName: "",
+          locationId: "",
         });
       } else {
-        alert('Error submitting inquiry.');
+        alert("Error submitting inquiry.");
       }
     } catch (error) {
-      console.error('Submission error:', error);
-      alert('Submission error. Please try again.');
+      console.error("Submission error:", error);
+      alert("Submission error. Please try again.");
     }
   };
 
+  // Are multiple locations assigned?
+  const userHasMultipleLocations = assignedLocations.length > 1;
+
+  // ------------------- RENDER -------------------
   return (
     <Container maxWidth="md">
-      <Box sx={{ mt: 4, mb: 4, p: 3, bgcolor: '#fff', borderRadius: 2, boxShadow: 3 }}>
+      <Box
+        sx={{ mt: 4, mb: 4, p: 3, bgcolor: "#fff", borderRadius: 2, boxShadow: 3 }}
+      >
         <Typography variant="h4" component="h1" textAlign="center" gutterBottom>
           Event Inquiry Form
         </Typography>
@@ -83,7 +146,7 @@ export default function InquiryPage() {
                 label="First Name"
                 name="firstName"
                 value={formData.firstName}
-                onChange={handleChange}
+                onChange={handleTextChange}
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -93,7 +156,7 @@ export default function InquiryPage() {
                 label="Last Name"
                 name="lastName"
                 value={formData.lastName}
-                onChange={handleChange}
+                onChange={handleTextChange}
               />
             </Grid>
 
@@ -106,7 +169,7 @@ export default function InquiryPage() {
                 label="Email"
                 name="email"
                 value={formData.email}
-                onChange={handleChange}
+                onChange={handleTextChange}
               />
             </Grid>
             <Grid item xs={12} md={4}>
@@ -116,7 +179,7 @@ export default function InquiryPage() {
                 label="Primary Phone"
                 name="primaryPhone"
                 value={formData.primaryPhone}
-                onChange={handleChange}
+                onChange={handleTextChange}
               />
             </Grid>
             <Grid item xs={12} md={4}>
@@ -125,7 +188,7 @@ export default function InquiryPage() {
                 label="Secondary Phone"
                 name="secondaryPhone"
                 value={formData.secondaryPhone}
-                onChange={handleChange}
+                onChange={handleTextChange}
               />
             </Grid>
 
@@ -138,7 +201,7 @@ export default function InquiryPage() {
                 label="Event Date"
                 name="eventDate"
                 value={formData.eventDate}
-                onChange={handleChange}
+                onChange={handleTextChange}
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
@@ -150,7 +213,7 @@ export default function InquiryPage() {
                 label="Event Time"
                 name="eventTime"
                 value={formData.eventTime}
-                onChange={handleChange}
+                onChange={handleTextChange}
                 InputLabelProps={{ shrink: true }}
               />
             </Grid>
@@ -162,42 +225,71 @@ export default function InquiryPage() {
                 label="Guest Count"
                 name="guestCount"
                 value={formData.guestCount}
-                onChange={handleChange}
+                onChange={handleTextChange}
               />
             </Grid>
 
-            {/* Service & Event Type */}
-            <Grid item xs={12} md={6}>
-              <TextField
-                required
-                select
-                fullWidth
-                label="Service"
-                name="service"
-                value={formData.service}
-                onChange={handleChange}
-              >
-                <MenuItem value="">Select Service</MenuItem>
-                <MenuItem value="BRUNCH">Brunch</MenuItem>
-                <MenuItem value="LUNCH">Lunch</MenuItem>
-                <MenuItem value="DINNER">Dinner</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                select
-                fullWidth
-                label="Event Type"
-                name="eventTypeId"
-                value={formData.eventTypeId}
-                onChange={handleChange}
-              >
-                <MenuItem value="">Select Event Type</MenuItem>
-                <MenuItem value="1">Wedding</MenuItem>
-                <MenuItem value="2">Corporate</MenuItem>
-                <MenuItem value="3">Birthday</MenuItem>
-                <MenuItem value="4">Other</MenuItem>
-              </TextField>
+            {/* Service, Event Type, and Location on same line */}
+            <Grid container item spacing={2} xs={12} sx={{ mb: 2 }}>
+              <Grid item xs={12} md={4}>
+                <FormControl fullWidth required>
+                  <InputLabel id="service-label">Service</InputLabel>
+                  <Select
+                    labelId="service-label"
+                    label="Service"
+                    name="service"
+                    value={formData.service}
+                    onChange={handleServiceChange}
+                  >
+                    <MenuItem value="">Select Service</MenuItem>
+                    <MenuItem value="BRUNCH">Brunch</MenuItem>
+                    <MenuItem value="LUNCH">Lunch</MenuItem>
+                    <MenuItem value="DINNER">Dinner</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <FormControl fullWidth>
+                  <InputLabel id="eventType-label">Event Type</InputLabel>
+                  <Select
+                    labelId="eventType-label"
+                    label="Event Type"
+                    name="eventTypeId"
+                    value={formData.eventTypeId}
+                    onChange={handleEventTypeChange}
+                  >
+                    <MenuItem value="">Select Event Type</MenuItem>
+                    {eventTypes.map((et) => (
+                      <MenuItem key={et.id} value={String(et.id)}>
+                        {et.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+
+              {userHasMultipleLocations && (
+                <Grid item xs={12} md={4}>
+                  <FormControl fullWidth required>
+                    <InputLabel id="location-label">Location</InputLabel>
+                    <Select
+                      labelId="location-label"
+                      label="Location"
+                      name="locationId"
+                      value={formData.locationId}
+                      onChange={handleLocationChange}
+                    >
+                      <MenuItem value="">-- Select Location --</MenuItem>
+                      {assignedLocations.map((loc) => (
+                        <MenuItem key={loc.id} value={String(loc.id)}>
+                          {loc.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              )}
             </Grid>
 
             {/* Message */}
@@ -209,7 +301,7 @@ export default function InquiryPage() {
                 label="Notes"
                 name="message"
                 value={formData.message}
-                onChange={handleChange}
+                onChange={handleTextChange}
               />
             </Grid>
 
@@ -220,7 +312,7 @@ export default function InquiryPage() {
                 label="Employee Name (Internal Use)"
                 name="employeeName"
                 value={formData.employeeName}
-                onChange={handleChange}
+                onChange={handleTextChange}
               />
             </Grid>
 

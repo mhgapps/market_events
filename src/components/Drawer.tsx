@@ -77,7 +77,7 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, toggleDrawer }) => {
             </Link>
           </li>
           <li>
-            <Link href="/admin/inquiries" legacyBehavior>
+            <Link href="/inquiries" legacyBehavior>
               <a
                 style={{
                   display: 'inline-flex',
